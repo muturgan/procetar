@@ -2,7 +2,7 @@ name: package publishing
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   publishing:
@@ -12,7 +12,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - if: github.ref == 'refs/heads/master'
+      - if: github.ref == 'refs/heads/main'
         name: Check published versions
         run: grep -qF "\"$(grep -oP '"version":\s*"\K[^"]+' package.json)\"" <<< "$(npm view $(grep -oP '"name":\s*"\K[^"]+' package.json) versions 2>/dev/null)" && echo false || echo true >> $GITHUB_ENV
 

@@ -1,0 +1,55 @@
+name: package publishing
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - edited
+      - synchronize
+
+jobs:
+  publishing:
+    name: publishing
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@master
+
+    - name: Set up Node.js
+      uses: actions/setup-node@master
+      with:
+        node-version: 20
+        registry-url: https://registry.npmjs.org/
+
+    - if: github.ref == 'refs/heads/master'
+      name: Check published versions
+      run: grep -qF "\"$(grep -oP '"version":\s*"\K[^"]+' package.json)\"" <<< "$(npm view $(grep -oP '"name":\s*"\K[^"]+' package.json) versions 2>/dev/null)" && echo false || echo true >> $GITHUB_ENV
+
+    - if: ${{ env.NEED_PUBLISH == 'true' }}
+      name: Install zopfli
+      run: sudo get install zopfli
+
+    - if: ${{ env.NEED_PUBLISH == 'true' }}
+      name: Compress with a default archiver
+      run: npm pack
+
+    - if: ${{ env.NEED_PUBLISH == 'true' }}
+      name: Gunzip a package
+      run: gunzip procetar-*.tgz
+
+    - if: ${{ env.NEED_PUBLISH == 'true' }}
+      name: Compress with a zopfli archiver
+      run: zopfli --i100 procetar-*.tar
+
+    - if: ${{ env.NEED_PUBLISH == 'true' }}
+      name: Rename a package file
+      run: find . -name '*.tar.gz' -exec sh -c 'mv "$0" "${0%.tar.gz}.tgz"' {} \;
+
+    - if: ${{ env.NEED_PUBLISH == 'true' }}
+      name: Publish
+      run: npm publish procetar-*.tgz
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}

@@ -1,1 +1,1 @@
-export declare function procetar(str: string): Promise<ArrayBuffer>;
+export declare function procetar(str: string): Promise<string>;

@@ -20,7 +20,7 @@ jobs:
 
       - if: github.ref == 'refs/heads/main'
         name: Check published versions
-        run: grep -qF "\"$(grep -oP '"version":\s*"\K[^"]+' package.json)\"" <<< "$(npm view $(grep -oP '"name":\s*"\K[^"]+' package.json) versions 2>/dev/null)" && echo "no" || echo "yes" >> $GITHUB_ENV
+        run: grep -qF "\"$(grep -oP '"version":\s*"\K[^"]+' package.json)\"" <<< "$(npm view $(grep -oP '"name":\s*"\K[^"]+' package.json) versions 2>/dev/null)" && echo "NEED_PUBLISH=no" || echo "NEED_PUBLISH=yes" >> $GITHUB_ENV
 
       - if: ${{ env.NEED_PUBLISH == 'yes' }}
         name: Install zopfli
